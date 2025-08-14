@@ -10,6 +10,7 @@ import ServiceManagement
 
 struct SettingsView: View {
     @AppStorage("launchAtLogin") private var launchAtLogin = false
+    @AppStorage("openMainWindowOnStart") private var openMainWindowOnStart = true
     @State private var showingAlert = false
     @State private var alertMessage = ""
     
@@ -17,6 +18,7 @@ struct SettingsView: View {
         TabView {
             GeneralSettingsView(
                 launchAtLogin: $launchAtLogin,
+                openMainWindowOnStart: $openMainWindowOnStart,
                 showingAlert: $showingAlert,
                 alertMessage: $alertMessage
             )
@@ -25,7 +27,7 @@ struct SettingsView: View {
             }
             .tag("general")
         }
-        .frame(width: 500, height: 300)
+        .frame(width: 500, height: 350)
         .alert("Einstellungen", isPresented: $showingAlert) {
             Button("OK") { }
         } message: {
@@ -36,6 +38,7 @@ struct SettingsView: View {
 
 struct GeneralSettingsView: View {
     @Binding var launchAtLogin: Bool
+    @Binding var openMainWindowOnStart: Bool
     @Binding var showingAlert: Bool
     @Binding var alertMessage: String
     
@@ -55,6 +58,18 @@ struct GeneralSettingsView: View {
                     }
                 
                 Text("Wenn aktiviert, wird die App automatisch gestartet, wenn Sie sich bei macOS anmelden.")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+                    .padding(.leading, 20)
+                
+                Divider()
+                
+                Text("Fenster-Verhalten")
+                    .font(.headline)
+                
+                Toggle("Hauptfenster beim Start öffnen", isOn: $openMainWindowOnStart)
+                
+                Text("Wenn deaktiviert, startet die App im Hintergrund ohne sichtbares Fenster.")
                     .font(.caption)
                     .foregroundColor(.secondary)
                     .padding(.leading, 20)

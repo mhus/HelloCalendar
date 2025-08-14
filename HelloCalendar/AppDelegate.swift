@@ -15,6 +15,20 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
     }
     
     func applicationDidFinishLaunching(_ notification: Notification) {
+        // Prüfe die Einstellung für das Öffnen des Hauptfensters beim Start
+        // Standardwert ist true, also nur verstecken wenn explizit auf false gesetzt
+        let shouldOpenWindow = UserDefaults.standard.object(forKey: "openMainWindowOnStart") as? Bool ?? true
+        
+        // Wenn die Einstellung deaktiviert ist, verstecke das Hauptfenster
+        if !shouldOpenWindow {
+            // Kleiner Delay um sicherzustellen, dass das Fenster bereits erstellt wurde
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                if let mainWindow = NSApp.windows.first(where: { $0.identifier?.rawValue == "main" }) {
+                    mainWindow.orderOut(nil)
+                }
+            }
+        }
+        
         // Setze den Delegate für alle Fenster
         for window in NSApp.windows {
             if window.identifier?.rawValue == "main" {
