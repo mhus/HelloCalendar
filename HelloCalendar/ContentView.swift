@@ -21,6 +21,18 @@ struct ContentView: View {
     var body: some View {
         NavigationView {
             VStack(spacing: 20) {
+                Image(systemName: "calendar")
+                    .font(.system(size: 60))
+                    .foregroundColor(.accentColor)
+                
+                Text("Hello Calendar")
+                    .font(.largeTitle)
+                    .fontWeight(.bold)
+                
+                Text("Willkommen zu Ihrer Kalender-App")
+                    .font(.headline)
+                    .foregroundColor(.secondary)
+                
                 // Zeige Berechtigungsbereich nur wenn noch nicht gewährt
                 if permissionStatus != "Gewährt" {
                     VStack(spacing: 10) {
@@ -163,6 +175,7 @@ struct ContentView: View {
         .onAppear {
             checkPermissionStatus()
             loadDisabledEvents()
+            // loadSelectedCalendars() wird jetzt in loadCalendars() aufgerufen
         }
     }
     
@@ -232,6 +245,7 @@ struct ContentView: View {
         } else {
             selectedCalendars.insert(calendar.calendarIdentifier)
         }
+        saveSelectedCalendars() // Speichere die Auswahl
         loadTodaysEvents()
     }
     
@@ -291,10 +305,32 @@ struct ContentView: View {
         disabledEvents = Set(savedDisabledEvents)
     }
     
+    private func saveSelectedCalendars() {
+        UserDefaults.standard.set(Array(selectedCalendars), forKey: "selectedCalendars")
+    }
+    
+    private func loadSelectedCalendars() {
+        let savedSelectedCalendars = UserDefaults.standard.stringArray(forKey: "selectedCalendars") ?? []
+        selectedCalendars = Set(savedSelectedCalendars)
+    }
+    
     private func loadCalendars() {
         calendars = eventStore.calendars(for: .event)
-        // Alle Kalender standardmäßig auswählen
-        selectedCalendars = Set(calendars.map { $0.calendarIdentifier })
+        
+        // Lade gespeicherte Kalender-Auswahl
+        loadSelectedCalendars()
+        
+        // Falls keine gespeicherte Auswahl vorhanden ist, wähle alle Kalender aus
+        if selectedCalendars.isEmpty {
+            selectedCalendars = Set(calendars.map { $0.calendarIdentifier })
+            saveSelectedCalendars()
+        } else {
+            // Stelle sicher, dass nur noch existierende Kalender ausgewählt sind
+            let existingCalendarIds = Set(calendars.map { $0.calendarIdentifier })
+            selectedCalendars = selectedCalendars.intersection(existingCalendarIds)
+            saveSelectedCalendars()
+        }
+        
         loadTodaysEvents()
     }
     
